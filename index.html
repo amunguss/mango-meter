@@ -3,34 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sigma Radiation Meter</title>
+    <title>Global Sigma Meter</title>
     <style>
-        body { margin: 0; background: #1a1a1a; color: #00ff00; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; text-align: center; }
-        .gauge-container { position: relative; width: 300px; height: 150px; background: #333; border: 5px solid #555; border-radius: 150px 150px 0 0; overflow: hidden; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
-        .needle { position: absolute; bottom: 0; left: 50%; width: 4px; height: 130px; background: red; transform-origin: bottom center; transform: rotate(-90deg); transition: transform 0.1s; z-index: 5; }
+        /* RGB Animation */
+        @keyframes rgb-cycle {
+            0% { color: #ff0000; border-color: #ff0000; text-shadow: 0 0 10px #ff0000; }
+            33% { color: #00ff00; border-color: #00ff00; text-shadow: 0 0 10px #00ff00; }
+            66% { color: #0000ff; border-color: #0000ff; text-shadow: 0 0 10px #0000ff; }
+            100% { color: #ff0000; border-color: #ff0000; text-shadow: 0 0 10px #ff0000; }
+        }
+
+        body { margin: 0; background: #000; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; text-align: center; color: white; }
+        
+        #status-text, #mango-icon, .gauge-labels span, button { animation: rgb-cycle 2s infinite linear; }
+
+        .gauge-container { position: relative; width: 300px; height: 150px; background: #111; border: 4px solid #444; border-radius: 150px 150px 0 0; overflow: hidden; margin-bottom: 20px; }
+        .needle { position: absolute; bottom: 0; left: 50%; width: 4px; height: 130px; background: #fff; transform-origin: bottom center; transform: rotate(-90deg); transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 5; box-shadow: 0 0 15px #fff; }
         .gauge-labels { position: absolute; width: 100%; top: 20px; font-weight: bold; font-size: 1.2rem; display: flex; justify-content: space-around; padding: 0 20px; box-sizing: border-box; }
-        #status-text { color: #00ff00; font-size: 1.5rem; margin: 10px; text-transform: uppercase; height: 40px; }
+        
+        #status-text { font-size: 1.4rem; margin: 10px; text-transform: uppercase; height: 40px; font-weight: bold; letter-spacing: 2px; }
         #mango-icon { font-size: 4rem; margin-bottom: 10px; }
+
         .lebron-container { position: relative; cursor: pointer; }
-        #lebron-img { width: 140px; height: 140px; border-radius: 50%; border: 5px solid #00ff00; object-fit: cover; }
+        #lebron-img { width: 140px; height: 140px; border-radius: 50%; border: 6px solid #fff; object-fit: cover; animation: rgb-cycle 2s infinite linear; transition: 0.2s; }
+        #lebron-img:active { transform: scale(0.9); }
+        
         .active-sigma { animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 1px); } }
-        button { padding: 15px 30px; font-size: 1.2rem; background: #00ff00; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        @keyframes shake { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-3px, -3px); } 100% { transform: translate(3px, 3px); } }
+        
+        button { padding: 15px 30px; font-size: 1.2rem; background: transparent; border: 3px solid #fff; cursor: pointer; font-weight: bold; margin-top: 10px; border-radius: 10px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <div id="mango-icon">🥭</div>
+    
     <div class="gauge-container">
         <div class="gauge-labels"><span>0</span><span>SIGMA LEVEL</span><span>MAX</span></div>
         <div class="needle" id="needle"></div>
     </div>
-    <div id="status-text">SİNYAL BEKLENİYOR...</div>
+
+    <div id="status-text">WAITING FOR SIGNAL...</div>
+    
     <div class="lebron-container" id="main-box" onclick="triggerSigma()">
         <img id="lebron-img" src="lebron.png" alt="Lebron">
     </div>
-    <br>
-    <button id="startBtn">SİSTEMİ AKTİVE ET</button>
+
+    <button id="startBtn">ACTIVATE SYSTEM</button>
 
     <audio id="lebronScream" src="lebronscream.mp3"></audio>
 
@@ -43,16 +62,15 @@
 
         function triggerSigma() {
             needle.style.transform = "rotate(90deg)";
-            statusText.innerText = "!!! SIGMA DETECTED !!!";
+            statusText.innerText = "!!! ULTRA SIGMA DETECTED !!!";
             mainBox.classList.add('active-sigma');
             
-            // Sadece LeBron bağıracak
             lebronScream.currentTime = 0;
             lebronScream.play();
 
             setTimeout(() => {
                 needle.style.transform = "rotate(-90deg)";
-                statusText.innerText = "SİNYAL BEKLENİYOR...";
+                statusText.innerText = "SEARCHING FOR SIGMA...";
                 mainBox.classList.remove('active-sigma');
             }, 2000);
         }
@@ -63,34 +81,33 @@
             
             if (SpeechRecognition) {
                 const recognition = new SpeechRecognition();
-                recognition.lang = 'tr-TR'; 
+                recognition.lang = 'en-US'; // Set to English for Global Sigma
                 recognition.continuous = true;
-                recognition.interimResults = true; // Daha hızlı algılama
+                recognition.interimResults = true;
 
                 recognition.onresult = (event) => {
                     for (let i = event.resultIndex; i < event.results.length; ++i) {
                         const text = event.results[i][0].transcript.toLowerCase();
-                        console.log("Duyulan:", text);
-                        // Sigma veya benzeri sesleri duyunca patla
-                        if (text.includes('sigma') || text.includes('sıkma') || text.includes('sekma') || text.includes('çıkma')) {
+                        console.log("Speech detected:", text);
+                        // Detects "sigma" or similar sounds
+                        if (text.includes('sigma') || text.includes('smegma') || text.includes('segma')) {
                             triggerSigma();
                         }
                     }
                 };
-
-                recognition.onerror = (err) => { statusText.innerText = "MİKROFON HATASI!"; };
-                recognition.onend = () => { recognition.start(); }; // Kapanırsa geri aç
+                
+                recognition.onend = () => { recognition.start(); }; 
                 recognition.start();
-                statusText.innerText = "DİNLENİYOR... SIGMA DE!";
+                statusText.innerText = "LISTENING... SAY 'SIGMA'";
             } else {
-                statusText.innerText = "TARAYICI DESTEKLEMİYOR!";
+                statusText.innerText = "BROWSER NOT SUPPORTED!";
             }
         };
 
-        // İbre titremesi
+        // Needle jitter for realism
         setInterval(() => {
             if (!mainBox.classList.contains('active-sigma')) {
-                const jitter = Math.random() * 5 - 90;
+                const jitter = Math.random() * 8 - 94;
                 needle.style.transform = `rotate(${jitter}deg)`;
             }
         }, 100);
