@@ -3,57 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sigma Mango Meter</title>
+    <title>Sigma Radiation Meter</title>
     <style>
-        body { margin: 0; background: #4caf50; font-family: 'Arial Black', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; text-align: center; }
-        #mango-display { font-size: 8rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3)); }
-        #status-text { color: yellow; font-size: 1.8rem; text-shadow: 3px 3px #000; margin: 20px; min-height: 80px; text-transform: uppercase; }
-        .lebron-container { position: relative; margin-top: 20px; cursor: pointer; }
-        #lebron-img { width: 160px; height: 160px; border-radius: 50%; border: 8px solid gold; object-fit: cover; z-index: 2; position: relative; transition: 0.3s; }
-        .sun-ray { position: absolute; top: 50%; left: 50%; width: 1000px; height: 1000px; background: conic-gradient(from 0deg, transparent 0deg, #fff700 20deg, transparent 40deg); transform: translate(-50%, -50%) scale(0); border-radius: 50%; opacity: 0; z-index: 1; pointer-events: none; }
-        .active-sun .sun-ray { animation: sunshine-burst 1.2s ease-out; }
-        @keyframes sunshine-burst { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
-        button { padding: 20px 40px; font-size: 1.5rem; background: #ff9800; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px #e68a00; }
+        body { margin: 0; background: #1a1a1a; color: #00ff00; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; text-align: center; }
+        
+        /* Radyasyon İbresi Tasarımı */
+        .gauge-container { position: relative; width: 300px; height: 150px; background: #333; border: 5px solid #555; border-radius: 150px 150px 0 0; overflow: hidden; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        .needle { position: absolute; bottom: 0; left: 50%; width: 4px; height: 130px; background: red; transform-origin: bottom center; transform: rotate(-90deg); transition: transform 0.1s cubic-bezier(0.22, 0.61, 0.36, 1); z-index: 5; }
+        .gauge-labels { position: absolute; width: 100%; top: 20px; font-weight: bold; font-size: 1.2rem; display: flex; justify-content: space-around; padding: 0 20px; box-sizing: border-box; }
+        
+        #status-text { color: #00ff00; font-size: 1.5rem; margin: 10px; text-transform: uppercase; letter-spacing: 2px; height: 40px; }
+        #mango-icon { font-size: 4rem; margin-bottom: 10px; }
+
+        .lebron-container { position: relative; cursor: pointer; }
+        #lebron-img { width: 140px; height: 140px; border-radius: 50%; border: 5px solid #00ff00; object-fit: cover; }
+        
+        .sun-ray { position: absolute; top: 50%; left: 50%; width: 800px; height: 800px; background: conic-gradient(from 0deg, transparent 0deg, rgba(0,255,0,0.3) 20deg, transparent 40deg); transform: translate(-50%, -50%) scale(0); border-radius: 50%; opacity: 0; z-index: -1; pointer-events: none; }
+        .active-sigma .sun-ray { animation: sunshine-burst 0.8s ease-out; }
+        .active-sigma { animation: shake 0.1s infinite; }
+
+        @keyframes sunshine-burst { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2); opacity: 0; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 1px); } }
+        
+        button { padding: 15px 30px; font-size: 1.2rem; background: #00ff00; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="status-text">"SIGMA" DE VEYA BANA TIKLA!</div>
-    <div id="mango-display">🥭</div>
+    <div id="mango-icon">🥭</div>
     
-    <div class="lebron-container" id="lebron-box" onclick="triggerSigma()">
+    <div class="gauge-container">
+        <div class="gauge-labels"><span>0</span><span>SIGMA LEVEL</span><span>MAX</span></div>
+        <div class="needle" id="needle"></div>
+    </div>
+
+    <div id="status-text">SİSTEM HAZIR...</div>
+    
+    <div class="lebron-container" id="main-box" onclick="triggerSigma()">
         <div class="sun-ray"></div>
         <img id="lebron-img" src="lebron.png" alt="Lebron">
     </div>
 
     <br>
-    <button id="startBtn">SİSTEMİ BAŞLAT</button>
+    <button id="startBtn">SİSTEMİ AKTİVE ET</button>
 
     <audio id="mangoAudio" src="https://www.myinstants.com/media/sounds/mango.mp3"></audio>
     <audio id="lebronScream" src="lebronscream.mp3"></audio>
 
     <script>
+        const needle = document.getElementById('needle');
         const statusText = document.getElementById('status-text');
-        const mangoDisplay = document.getElementById('mango-display');
-        const lebronBox = document.getElementById('lebron-box');
+        const mainBox = document.getElementById('main-box');
         const lebronScream = document.getElementById('lebronScream');
         const mangoAudio = document.getElementById('mangoAudio');
         const startBtn = document.getElementById('startBtn');
 
         function triggerSigma() {
-            mangoDisplay.style.transform = "scale(3)";
-            statusText.innerText = "SIGMA DETECTED! 🗿";
-            lebronBox.classList.add('active-sun');
+            // İbreyi sona vurdur
+            needle.style.transform = "rotate(90deg)";
+            statusText.innerText = "!!! CRITICAL SIGMA LEVEL !!!";
+            mainBox.classList.add('active-sigma');
+            
             lebronScream.currentTime = 0;
             lebronScream.play();
             if (mangoAudio.paused) mangoAudio.play();
 
             setTimeout(() => {
-                mangoDisplay.style.transform = "scale(1)";
-                statusText.innerText = '"SIGMA" DE VEYA BANA TIKLA!';
-                lebronBox.classList.remove('active-sun');
+                needle.style.transform = "rotate(-90deg)";
+                statusText.innerText = "SİNYAL BEKLENİYOR...";
+                mainBox.classList.remove('active-sigma');
             }, 2000);
         }
+
+        // Rastgele ibre titremesi (Gerçekçilik için)
+        setInterval(() => {
+            if (!mainBox.classList.contains('active-sigma')) {
+                const jitter = Math.random() * 10 - 95; // -95 ile -85 arası titreme
+                needle.style.transform = `rotate(${jitter}deg)`;
+            }
+        }, 100);
 
         startBtn.onclick = () => {
             startBtn.style.display = 'none';
@@ -65,9 +93,12 @@
                 recognition.continuous = true;
                 recognition.onresult = (event) => {
                     const text = event.results[event.results.length - 1][0].transcript.toLowerCase();
-                    if (text.includes('sigma') || text.includes('sıkma')) triggerSigma();
+                    if (text.includes('sigma') || text.includes('sıkma') || text.includes('sekma')) triggerSigma();
                 };
                 recognition.start();
+                statusText.innerText = "DİNLENİYOR... SIGMA DE!";
+            } else {
+                statusText.innerText = "TARAYICI DESTEKLEMİYOR!";
             }
         };
     </script>
