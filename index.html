@@ -5,32 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mango Magneto-Meter</title>
     <style>
-        body {
-            margin: 0; background: #4caf50; font-family: 'Arial Black', sans-serif;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; height: 100vh; overflow: hidden; text-align: center;
-        }
+        body { margin: 0; background: #4caf50; font-family: 'Arial Black', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; text-align: center; }
         #mango-display { font-size: 8rem; transition: transform 0.1s; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3)); }
-        #status-text { color: yellow; font-size: 2rem; text-shadow: 3px 3px #000; margin: 20px; min-height: 80px; }
-        
+        #status-text { color: yellow; font-size: 1.8rem; text-shadow: 3px 3px #000; margin: 20px; min-height: 80px; text-transform: uppercase; }
         .lebron-container { position: relative; margin-top: 20px; cursor: pointer; }
         #lebron-img { width: 180px; height: 180px; border-radius: 50%; border: 8px solid gold; object-fit: cover; z-index: 2; position: relative; }
-        
-        /* Sunshine Effect */
-        .sun-ray {
-            position: absolute; top: 50%; left: 50%; width: 1000px; height: 1000px;
-            background: conic-gradient(from 0deg, transparent 0deg, #fff700 20deg, transparent 40deg);
-            transform: translate(-50%, -50%) scale(0);
-            border-radius: 50%; opacity: 0; z-index: 1; pointer-events: none;
-        }
+        .sun-ray { position: absolute; top: 50%; left: 50%; width: 1000px; height: 1000px; background: conic-gradient(from 0deg, transparent 0deg, #fff700 20deg, transparent 40deg); transform: translate(-50%, -50%) scale(0); border-radius: 50%; opacity: 0; z-index: 1; pointer-events: none; }
         .active-sun .sun-ray { animation: sunshine-burst 1.5s ease-out; }
-        @keyframes sunshine-burst {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2) rotate(180deg); opacity: 0; }
-        }
-
+        @keyframes sunshine-burst { 0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5) rotate(180deg); opacity: 0; } }
         button { padding: 20px 40px; font-size: 1.5rem; background: #ff9800; color: white; border: none; border-radius: 50px; box-shadow: 0 5px #e68a00; cursor: pointer; }
-        button:active { transform: translateY(4px); box-shadow: 0 2px #e68a00; }
     </style>
 </head>
 <body>
@@ -40,25 +23,25 @@
     
     <div class="lebron-container" onclick="triggerLebron()">
         <div class="sun-ray"></div>
-        <img id="lebron-img" src="image_19238b.png" alt="Lebron">
+        <img id="lebron-img" src="lebron.png" alt="Lebron">
     </div>
 
     <br><br>
     <button id="startBtn">START MANGO RADAR</button>
 
     <audio id="mangoAudio" src="https://www.myinstants.com/media/sounds/mango.mp3"></audio>
-    <audio id="lebronScream" src="https://www.myinstants.com/media/sounds/lebron-james.mp3"></audio>
+    <audio id="lebronScream" src="lebronscream.mp3"></audio>
 
     <script>
         const statusText = document.getElementById('status-text');
         const mangoDisplay = document.getElementById('mango-display');
         const lebronContainer = document.querySelector('.lebron-container');
-        const mangoAudio = document.getElementById('mangoAudio');
         const lebronScream = document.getElementById('lebronScream');
+        const mangoAudio = document.getElementById('mangoAudio');
 
         function triggerLebron() {
             lebronContainer.classList.add('active-sun');
-            lebronScream.currentTime = 0;
+            lebronScream.currentTime = 0; 
             lebronScream.play();
             setTimeout(() => { lebronContainer.classList.remove('active-sun'); }, 1500);
         }
@@ -66,23 +49,21 @@
         document.getElementById('startBtn').onclick = async () => {
             document.getElementById('startBtn').style.display = 'none';
             try {
-                // Initializing Magnetometer (Sensor API)
                 const sensor = new Magnetometer({frequency: 20});
                 sensor.addEventListener('reading', () => {
                     const mag = Math.sqrt(sensor.x**2 + sensor.y**2 + sensor.z**2);
-                    
                     if (mag > 100) { 
                         statusText.innerText = "MANGOS MANGOS MANGOS!!!";
-                        mangoDisplay.style.transform = `scale(${1 + (mag/150)}) rotate(${mag/10}deg)`;
+                        mangoDisplay.style.transform = `scale(${1 + (mag/150)})`;
                         if (mangoAudio.paused) mangoAudio.play();
                     } else {
                         statusText.innerText = "Searching for mangos...";
-                        mangoDisplay.style.transform = "scale(1) rotate(0deg)";
+                        mangoDisplay.style.transform = "scale(1)";
                     }
                 });
                 sensor.start();
             } catch (err) {
-                statusText.innerText = "SENSOR ERROR: Open this link in Chrome on your phone!";
+                statusText.innerText = "SENSORS BLOCKED. Use Chrome on Android!";
             }
         };
     </script>
