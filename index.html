@@ -6,89 +6,45 @@
     <title>Mango Magneto-Meter</title>
     <style>
         body {
-            margin: 0;
-            background: #4caf50;
-            font-family: 'Arial Black', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            text-align: center;
+            margin: 0; background: #4caf50; font-family: 'Arial Black', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100vh; overflow: hidden; text-align: center;
         }
-
-        #mango-display {
-            font-size: 5rem;
-            margin-bottom: 20px;
-            transition: transform 0.1s;
-        }
-
-        #status-text {
-            color: yellow;
-            font-size: 2rem;
-            text-shadow: 2px 2px #000;
-            height: 60px;
-        }
-
-        .lebron-container {
-            position: relative;
-            margin-top: 50px;
-            cursor: pointer;
-        }
-
-        #lebron-img {
-            width: 200px;
-            border-radius: 50%;
-            border: 5px solid gold;
-            transition: 0.3s;
-        }
-
-        /* The Sunshine Effect */
-        .sunshine {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255,255,0,1) 0%, rgba(255,255,0,0) 70%);
+        #mango-display { font-size: 8rem; transition: transform 0.1s; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3)); }
+        #status-text { color: yellow; font-size: 2rem; text-shadow: 3px 3px #000; margin: 20px; min-height: 80px; }
+        
+        .lebron-container { position: relative; margin-top: 20px; cursor: pointer; }
+        #lebron-img { width: 180px; height: 180px; border-radius: 50%; border: 8px solid gold; object-fit: cover; z-index: 2; position: relative; }
+        
+        /* Sunshine Effect */
+        .sun-ray {
+            position: absolute; top: 50%; left: 50%; width: 1000px; height: 1000px;
+            background: conic-gradient(from 0deg, transparent 0deg, #fff700 20deg, transparent 40deg);
             transform: translate(-50%, -50%) scale(0);
-            pointer-events: none;
-            z-index: -1;
+            border-radius: 50%; opacity: 0; z-index: 1; pointer-events: none;
+        }
+        .active-sun .sun-ray { animation: sunshine-burst 1.5s ease-out; }
+        @keyframes sunshine-burst {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2) rotate(180deg); opacity: 0; }
         }
 
-        .active-sun .sunshine {
-            animation: burst 1s ease-out;
-        }
-
-        @keyframes burst {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
-        }
-
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background: orange;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-        }
+        button { padding: 20px 40px; font-size: 1.5rem; background: #ff9800; color: white; border: none; border-radius: 50px; box-shadow: 0 5px #e68a00; cursor: pointer; }
+        button:active { transform: translateY(4px); box-shadow: 0 2px #e68a00; }
     </style>
 </head>
 <body>
 
     <div id="mango-display">🥭</div>
-    <div id="status-text">PRESS START</div>
+    <div id="status-text">MANGOS?</div>
     
     <div class="lebron-container" onclick="triggerLebron()">
-        <div class="sunshine"></div>
-        <img id="lebron-img" src="https://upload.wikimedia.org/wikipedia/commons/c/cf/LeBron_James_crop.jpg" alt="Lebron">
+        <div class="sun-ray"></div>
+        <img id="lebron-img" src="image_19238b.png" alt="Lebron">
     </div>
 
-    <br>
-    <button id="startBtn">START SENSOR</button>
+    <br><br>
+    <button id="startBtn">START MANGO RADAR</button>
 
     <audio id="mangoAudio" src="https://www.myinstants.com/media/sounds/mango.mp3"></audio>
     <audio id="lebronScream" src="https://www.myinstants.com/media/sounds/lebron-james.mp3"></audio>
@@ -102,38 +58,31 @@
 
         function triggerLebron() {
             lebronContainer.classList.add('active-sun');
+            lebronScream.currentTime = 0;
             lebronScream.play();
-            setTimeout(() => {
-                lebronContainer.classList.remove('active-sun');
-            }, 1000);
+            setTimeout(() => { lebronContainer.classList.remove('active-sun'); }, 1500);
         }
 
         document.getElementById('startBtn').onclick = async () => {
             document.getElementById('startBtn').style.display = 'none';
-            
             try {
-                // Check for Magnetometer sensor
-                const sensor = new Magnetometer({frequency: 10});
-                
+                // Initializing Magnetometer (Sensor API)
+                const sensor = new Magnetometer({frequency: 20});
                 sensor.addEventListener('reading', () => {
-                    // Total magnetic field strength
                     const mag = Math.sqrt(sensor.x**2 + sensor.y**2 + sensor.z**2);
                     
-                    // Normal magnetic field is around 45-65 microteslas
-                    if (mag > 150) { 
+                    if (mag > 100) { 
                         statusText.innerText = "MANGOS MANGOS MANGOS!!!";
-                        mangoDisplay.style.transform = `scale(${1 + (mag/200)})`;
+                        mangoDisplay.style.transform = `scale(${1 + (mag/150)}) rotate(${mag/10}deg)`;
                         if (mangoAudio.paused) mangoAudio.play();
                     } else {
                         statusText.innerText = "Searching for mangos...";
-                        mangoDisplay.style.transform = "scale(1)";
+                        mangoDisplay.style.transform = "scale(1) rotate(0deg)";
                     }
                 });
-
                 sensor.start();
             } catch (err) {
-                statusText.innerText = "Sensor Error: Use a phone + HTTPS";
-                console.error(err);
+                statusText.innerText = "SENSOR ERROR: Open this link in Chrome on your phone!";
             }
         };
     </script>
