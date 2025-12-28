@@ -8,26 +8,26 @@
         body { margin: 0; background: #4caf50; font-family: 'Arial Black', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; text-align: center; }
         #mango-display { font-size: 8rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3)); }
         #status-text { color: yellow; font-size: 1.8rem; text-shadow: 3px 3px #000; margin: 20px; min-height: 80px; text-transform: uppercase; }
-        .lebron-container { position: relative; margin-top: 20px; }
+        .lebron-container { position: relative; margin-top: 20px; cursor: pointer; }
         #lebron-img { width: 160px; height: 160px; border-radius: 50%; border: 8px solid gold; object-fit: cover; z-index: 2; position: relative; transition: 0.3s; }
         .sun-ray { position: absolute; top: 50%; left: 50%; width: 1000px; height: 1000px; background: conic-gradient(from 0deg, transparent 0deg, #fff700 20deg, transparent 40deg); transform: translate(-50%, -50%) scale(0); border-radius: 50%; opacity: 0; z-index: 1; pointer-events: none; }
         .active-sun .sun-ray { animation: sunshine-burst 1.2s ease-out; }
-        @keyframes sunshine-burst { 0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5) rotate(180deg); opacity: 0; } }
+        @keyframes sunshine-burst { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
         button { padding: 20px 40px; font-size: 1.5rem; background: #ff9800; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px #e68a00; }
     </style>
 </head>
 <body>
 
-    <div id="status-text">"SIGMA" DE!</div>
+    <div id="status-text">"SIGMA" DE VEYA BANA TIKLA!</div>
     <div id="mango-display">🥭</div>
     
-    <div class="lebron-container" id="lebron-box">
+    <div class="lebron-container" id="lebron-box" onclick="triggerSigma()">
         <div class="sun-ray"></div>
         <img id="lebron-img" src="lebron.png" alt="Lebron">
     </div>
 
     <br>
-    <button id="startBtn">MİKROFONU AÇ VE BAŞLA</button>
+    <button id="startBtn">SİSTEMİ BAŞLAT</button>
 
     <audio id="mangoAudio" src="https://www.myinstants.com/media/sounds/mango.mp3"></audio>
     <audio id="lebronScream" src="lebronscream.mp3"></audio>
@@ -41,57 +41,34 @@
         const startBtn = document.getElementById('startBtn');
 
         function triggerSigma() {
-            // Mango Büyümesi
-            mangoDisplay.style.transform = "scale(3) rotate(20deg)";
+            mangoDisplay.style.transform = "scale(3)";
             statusText.innerText = "SIGMA DETECTED! 🗿";
-            
-            // LeBron Efekti
             lebronBox.classList.add('active-sun');
             lebronScream.currentTime = 0;
             lebronScream.play();
             if (mangoAudio.paused) mangoAudio.play();
 
-            // 2 saniye sonra normale dön
             setTimeout(() => {
-                mangoDisplay.style.transform = "scale(1) rotate(0deg)";
-                statusText.innerText = '"SIGMA" DE!';
+                mangoDisplay.style.transform = "scale(1)";
+                statusText.innerText = '"SIGMA" DE VEYA BANA TIKLA!';
                 lebronBox.classList.remove('active-sun');
             }, 2000);
         }
 
         startBtn.onclick = () => {
             startBtn.style.display = 'none';
-            
-            // Ses Tanıma Başlatma
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                statusText.innerText = "HATA: Tarayıcı desteklemiyor!";
-                return;
+            
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'tr-TR';
+                recognition.continuous = true;
+                recognition.onresult = (event) => {
+                    const text = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                    if (text.includes('sigma') || text.includes('sıkma')) triggerSigma();
+                };
+                recognition.start();
             }
-
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'tr-TR'; // Türkçe algılama
-            recognition.continuous = true;
-            recognition.interimResults = false;
-
-            recognition.onresult = (event) => {
-                const last = event.results.length - 1;
-                const text = event.results[last][0].transcript.toLowerCase();
-                
-                console.log("Duyulan:", text);
-
-                if (text.includes('sigma') || text.includes('sıkma') || text.includes('sekma')) {
-                    triggerSigma();
-                }
-            };
-
-            recognition.onerror = (err) => {
-                statusText.innerText = "MİKROFON HATASI!";
-                console.error(err);
-            };
-
-            recognition.start();
-            statusText.innerText = "DİNLİYORUM... SIGMA DE!";
         };
     </script>
 </body>
