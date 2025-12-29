@@ -14,7 +14,39 @@
         }
 
         body { margin: 0; background: #000; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; text-align: center; color: white; }
-        #status-text, #mango-icon, .gauge-labels span, .settings-btn { animation: rgb-cycle 2s infinite linear; }
+        #status-text, .gauge-labels span, .settings-btn { animation: rgb-cycle 2s infinite linear; }
+        /* Jolly Mode etkileri */
+        body.jolly-mode { background: #220000; } /* Koyu kırmızı tonu */
+        .jolly-mode #status-text, .jolly-mode .gauge-labels span {
+            animation: none; /* RGB animasyonunu kapat */
+            color: #00ff00; /* Yeşil */
+            text-shadow: 0 0 10px #ff0000; /* Kırmızı gölge */
+            border-color: #ff0000;
+        }
+        .jolly-mode #mango-icon {
+            font-size: 3.5rem; /* Yazı daha küçük kalsın */
+            color: #fff; /* Beyaz */
+            text-shadow: 0 0 15px #00ff00; /* Yeşil gölge */
+            animation: none;
+        }
+        .jolly-mode .settings-btn {
+            animation: none;
+            background: #ff0000;
+            color: #00ff00;
+            border-color: #00ff00;
+            text-shadow: none;
+        }
+        .jolly-mode #lebron-img {
+            border-color: #ff0000;
+            box-shadow: 0 0 20px #00ff00;
+            animation: none;
+        }
+        .jolly-mode button#startBtn {
+             animation: none;
+             background: #006400; /* Koyu yeşil */
+             color: #ff0000; /* Kırmızı */
+             border-color: #ff0000;
+        }
 
         /* Gauge */
         .gauge-container { position: relative; width: 300px; height: 150px; background: #111; border: 4px solid #444; border-radius: 150px 150px 0 0; overflow: hidden; margin-bottom: 20px; }
@@ -37,6 +69,17 @@
         .close-btn { margin-top: 15px; cursor: pointer; background: white; color: black; border: none; padding: 5px 10px; font-weight: bold; }
 
         button#startBtn { padding: 15px 30px; font-size: 1.2rem; background: transparent; border: 3px solid #fff; cursor: pointer; margin-top: 10px; animation: rgb-cycle 2s infinite linear; }
+
+        /* Jolly Mode Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; margin-top: 10px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; -webkit-transition: .4s; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2196F3; }
+        input:focus + .slider { box-shadow: 0 0 1px #2196F3; }
+        input:checked + .slider:before { -webkit-transform: translateX(26px); -ms-transform: translateX(26px); transform: translateX(26px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
     </style>
 </head>
 <body>
@@ -47,6 +90,12 @@
         <h3>AUDIO BOOST</h3>
         <input type="range" id="volumeSlider" min="1" max="1000" value="100">
         <p>Volume: <span id="volValue">100</span>%</p>
+
+        <h3>JOLLY MODE</h3>
+        <label class="switch">
+            <input type="checkbox" id="jollyModeToggle" onchange="toggleJollyMode()">
+            <span class="slider round"></span>
+        </label>
         <button class="close-btn" onclick="toggleSettings()">CLOSE</button>
     </div>
 
@@ -71,6 +120,8 @@
         const startBtn = document.getElementById('startBtn');
         const volumeSlider = document.getElementById('volumeSlider');
         const volValue = document.getElementById('volValue');
+        const mangoIcon = document.getElementById('mango-icon');
+        const jollyModeToggle = document.getElementById('jollyModeToggle');
 
         // Ses Yükseltme Sistemi (Audio Context)
         let audioCtx, source, gainNode;
@@ -82,13 +133,14 @@
                 gainNode = audioCtx.createGain();
                 source.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
+                // Başlangıç sesini ayarla
+                gainNode.gain.value = volumeSlider.value / 100;
             }
         }
 
         volumeSlider.oninput = function() {
             volValue.innerText = this.value;
             if (gainNode) {
-                // %100 = 1.0 gain, %1000 = 10.0 gain
                 gainNode.gain.value = this.value / 100;
             }
         };
@@ -98,16 +150,28 @@
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
+        function toggleJollyMode() {
+            document.body.classList.toggle('jolly-mode', jollyModeToggle.checked);
+            if (jollyModeToggle.checked) {
+                mangoIcon.innerText = "🎅 HO HO HO!";
+            } else {
+                mangoIcon.innerText = "🥭";
+            }
+            // Jolly mod aktifken RGB animasyonlarını tekrar başlatmak için geçici çözüm
+            // Bu kısım tam bir sıfırlama yapmaz ama geçişi daha iyi gösterir
+            document.body.offsetHeight; // Reflow for animation reset
+        }
+
         function triggerSigma() {
             initAudio(); // Ses sistemini başlat
             needle.style.transform = "rotate(90deg)";
-            statusText.innerText = "!!! ULTRA SIGMA !!!";
+            statusText.innerText = jollyModeToggle.checked ? "MERRY SIGMAS!" : "!!! ULTRA SIGMA !!!";
             mainBox.classList.add('active-sigma');
             lebronScream.currentTime = 0;
             lebronScream.play();
             setTimeout(() => {
                 needle.style.transform = "rotate(-90deg)";
-                statusText.innerText = "SEARCHING...";
+                statusText.innerText = jollyModeToggle.checked ? "WISH YOU SIGMA..." : "SEARCHING...";
                 mainBox.classList.remove('active-sigma');
             }, 2000);
         }
@@ -128,7 +192,7 @@
                     }
                 };
                 recognition.start();
-                statusText.innerText = "LISTENING...";
+                statusText.innerText = jollyModeToggle.checked ? "LISTENING FOR JOLLY SIGMAS..." : "LISTENING...";
             }
         };
 
