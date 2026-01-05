@@ -1,183 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sigma Magnetic Meter</title>
-    <style>
-        /* RGB & Base Styling */
-        @keyframes rgb-cycle {
-            0% { color: #ff0000; border-color: #ff0000; text-shadow: 0 0 10px #ff0000; }
-            33% { color: #00ff00; border-color: #00ff00; text-shadow: 0 0 10px #00ff00; }
-            66% { color: #0000ff; border-color: #0000ff; text-shadow: 0 0 10px #0000ff; }
-            100% { color: #ff0000; border-color: #ff0000; text-shadow: 0 0 10px #ff0000; }
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mango Meter</title>
 
-        body { 
-            margin: 0; background: #000; font-family: 'Courier New', monospace; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            height: 100vh; overflow: hidden; text-align: center; color: white; transition: 0.8s;
-            background-size: cover; background-position: center;
-        }
+<style>
+@keyframes rgb-cycle {
+  0% { color:red; border-color:red; box-shadow:0 0 15px red; }
+  33% { color:lime; border-color:lime; box-shadow:0 0 15px lime; }
+  66% { color:blue; border-color:blue; box-shadow:0 0 15px blue; }
+  100% { color:red; border-color:red; box-shadow:0 0 15px red; }
+}
 
-        body.jolly-mode { background-image: url('whyishesojolly.jpg'); }
+body {
+  margin:0;
+  background:black;
+  font-family:Courier New, monospace;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  overflow:hidden;
+}
 
-        /* Gauge */
-        .gauge-container { position: relative; width: 300px; height: 150px; background: rgba(17, 17, 17, 0.9); border: 4px solid #444; border-radius: 150px 150px 0 0; overflow: hidden; margin-bottom: 20px; box-shadow: 0 0 20px #555; }
-        .needle { position: absolute; bottom: 0; left: 50%; width: 5px; height: 130px; background: #ff0000; transform-origin: bottom center; transform: rotate(-90deg); transition: transform 0.1s linear; z-index: 5; box-shadow: 0 0 10px #ff0000; }
-        .gauge-labels { position: absolute; width: 100%; top: 20px; font-weight: bold; font-size: 1.2rem; display: flex; justify-content: space-around; animation: rgb-cycle 2s infinite linear; }
+body.jolly-mode {
+  background:url("whyishesojolly.jpg") center/cover no-repeat;
+}
 
-        /* Character */
-        #char-img { width: 150px; height: 150px; border-radius: 50%; border: 5px solid #fff; object-fit: cover; animation: rgb-cycle 3s infinite linear; }
-        .active-sigma { animation: shake 0.05s infinite; }
-        @keyframes shake { 0% { transform: scale(1.1) translate(2px, 2px); } 50% { transform: scale(1.1) translate(-2px, -2px); } }
+.settings-btn {
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:none;
+  border:2px solid white;
+  color:white;
+  padding:10px;
+  cursor:pointer;
+}
 
-        /* Settings */
-        #settings-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.98); border: 3px solid #fff; padding: 20px; border-radius: 15px; z-index: 100; width: 80%; }
-        .settings-btn { position: fixed; top: 20px; right: 20px; background: none; border: 2px solid #fff; color: white; padding: 10px; cursor: pointer; border-radius: 5px; }
-        
-        #mag-value { font-size: 2rem; margin-top: 10px; color: #00ff00; }
-        .info { font-size: 0.7rem; color: #888; margin-bottom: 10px; }
-    </style>
+#settings {
+  display:none;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:black;
+  border:3px solid white;
+  border-radius:15px;
+  padding:20px;
+  width:80%;
+  z-index:99;
+}
+
+#gauge {
+  width:300px;
+  height:150px;
+  border:4px solid #555;
+  border-radius:150px 150px 0 0;
+  position:relative;
+  margin:20px 0;
+}
+
+#needle {
+  position:absolute;
+  bottom:0;
+  left:50%;
+  width:5px;
+  height:130px;
+  background:red;
+  transform-origin:bottom;
+  transform:rotate(-90deg);
+  transition:0.1s;
+}
+
+#char {
+  width:150px;
+  height:150px;
+  border-radius:50%;
+  border:5px solid white;
+  animation:rgb-cycle 3s linear infinite;
+}
+
+.active {
+  animation:shake 0.05s infinite;
+}
+@keyframes shake {
+  0%{transform:scale(1.1) translate(2px,2px)}
+  50%{transform:scale(1.1) translate(-2px,-2px)}
+}
+
+#sliderWrap {
+  width:100%;
+  height:100px;
+  animation:rgb-cycle 2s linear infinite;
+}
+canvas {
+  width:100%;
+  height:80px;
+}
+
+#notice {
+  position:fixed;
+  bottom:10px;
+  font-size:12px;
+  color:#777;
+  opacity:0.8;
+}
+</style>
 </head>
+
 <body>
 
-    <button class="settings-btn" onclick="toggleSettings()">⚙ SETTINGS</button>
+<button class="settings-btn" onclick="toggleSettings()">⚙</button>
 
-    <div id="settings-panel">
-        <h2 style="color: #ff0000;">MAGNETIC CALIBRATION</h2>
-        <p class="info">Sensitivity: Sensör hassasiyetini ayarlar</p>
-        <input type="range" id="sensitivity" min="10" max="200" value="50" style="width:100%">
-        <hr>
-        <h3>AUDIO BOOST</h3>
-        <input type="range" id="volumeSlider" min="1" max="1000" value="100" style="width:100%">
-        <hr>
-        <h3>JOLLY MODE</h3>
-        <input type="checkbox" id="jollyToggle" onchange="applyJollyMode()" style="transform: scale(2);">
-        <br><br>
-        <button onclick="toggleSettings()" style="width:100%; padding:10px;">SAVE</button>
-    </div>
+<div id="settings">
+  <h3>Sensitivity</h3>
+  <input type="range" id="sens" min="10" max="200" value="50" style="width:100%">
+  <hr>
 
-    <div id="mango-icon" style="font-size: 3rem;">🥭</div>
-    <div id="mag-value">0 μT</div>
+  <h3>Audio Boost</h3>
+  <div id="sliderWrap">
+    <canvas id="slider"></canvas>
+  </div>
+  <p id="volText" style="text-align:center">Volume: 1.00x</p>
 
-    <div class="gauge-container">
-        <div class="gauge-labels"><span>MIN</span><span>MAGNETIC</span><span>MAX</span></div>
-        <div class="needle" id="needle"></div>
-    </div>
+  <hr>
+  <h3>Jolly Mode</h3>
+  <input type="checkbox" id="jolly" onchange="toggleJolly()" style="transform:scale(2)">
+  <br><br>
+  <button onclick="toggleSettings()" style="width:100%">SAVE</button>
+</div>
 
-    <div class="char-container" id="main-box">
-        <img id="char-img" src="lebron.png">
-    </div>
+<div id="mag">0 μT</div>
 
-    <button id="startBtn" onclick="initSensor()" style="padding: 20px; margin-top: 20px; font-weight: bold;">ENABLE SENSOR</button>
+<div id="gauge">
+  <div id="needle"></div>
+</div>
 
-    <audio id="lebronScream" src="lebronscream.mp3"></audio>
-    <audio id="jonklerScream" src="why-so-jolly-made-with-Voicemod.mp3"></audio>
+<img id="char" src="lebron.png">
 
-    <script>
-        let sensorActive = false;
-        const needle = document.getElementById('needle');
-        const magDisplay = document.getElementById('mag-value');
-        const sensitivity = document.getElementById('sensitivity');
-        const jollyToggle = document.getElementById('jollyToggle');
-        
-        let audioCtx, gainNode;
+<button onclick="start()" style="padding:15px;margin-top:10px">ENABLE SENSOR</button>
 
-        function applyJollyMode() {
-            if (jollyToggle.checked) {
-                document.body.classList.add('jolly-mode');
-                document.getElementById('char-img').src = "whysojolly.jpg";
-                document.getElementById('mango-icon').innerText = "🎅";
-            } else {
-                document.body.classList.remove('jolly-mode');
-                document.getElementById('char-img').src = "lebron.png";
-                document.getElementById('mango-icon').innerText = "🥭";
-            }
-        }
+<div id="notice"></div>
 
-        function toggleSettings() {
-            const panel = document.getElementById('settings-panel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
+<audio id="s1" src="lebronscream.mp3"></audio>
+<audio id="s2" src="why-so-jolly-made-with-Voicemod.mp3"></audio>
 
-        async function initSensor() {
-            // Audio Context Başlat
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                gainNode = audioCtx.createGain();
-                gainNode.connect(audioCtx.destination);
-                
-                const s1 = audioCtx.createMediaElementSource(document.getElementById('lebronScream'));
-                const s2 = audioCtx.createMediaElementSource(document.getElementById('jonklerScream'));
-                s1.connect(gainNode); s2.connect(gainNode);
-            }
+<script>
+let audioCtx, gainNode;
+let volume = 100;
+let sensorAvailable = false;
+let active = false;
 
-            document.getElementById('startBtn').style.display = 'none';
+function toggleSettings(){
+  settings.style.display = settings.style.display==="block"?"none":"block";
+}
 
-            // Manyetik Sensör Kontrolü (Generic Sensor API)
-            try {
-                if ('Magnetometer' in window) {
-                    const magSensor = new Magnetometer({frequency: 60});
-                    magSensor.addEventListener('reading', () => {
-                        // Manyetik alan şiddetini hesapla: sqrt(x^2 + y^2 + z^2)
-                        let totalMag = Math.sqrt(Math.pow(magSensor.x, 2) + Math.pow(magSensor.y, 2) + Math.pow(magSensor.z, 2));
-                        updateUI(totalMag);
-                    });
-                    magSensor.start();
-                } else {
-                    // Alternatif: DeviceOrientation (Eski cihazlar)
-                    window.addEventListener('deviceorientation', (event) => {
-                        // Basit bir veri simülasyonu (Manyetometre yoksa hareketten alır)
-                        let fakeMag = Math.abs(event.alpha || 0) / 2;
-                        updateUI(fakeMag);
-                    });
-                }
-            } catch (e) {
-                alert("Sensor access denied or not supported. Using simulation.");
-                simulateSensor(); // Test için simülasyon
-            }
-        }
+function toggleJolly(){
+  if(jolly.checked){
+    document.body.classList.add("jolly-mode");
+    char.src="whysojolly.jpg";
+  } else {
+    document.body.classList.remove("jolly-mode");
+    char.src="lebron.png";
+  }
+}
 
-        function updateUI(value) {
-            magDisplay.innerText = Math.floor(value) + " μT";
-            
-            // Sensör değerini ibre açısına çevir (-90 ile 90 arası)
-            let limit = parseInt(sensitivity.value);
-            let angle = ((value / limit) * 180) - 90;
-            if (angle > 90) angle = 90;
-            
-            needle.style.transform = `rotate(${angle}deg)`;
+function start(){
+  if(!audioCtx){
+    audioCtx = new AudioContext();
+    gainNode = audioCtx.createGain();
+    gainNode.connect(audioCtx.destination);
+    audioCtx.createMediaElementSource(s1).connect(gainNode);
+    audioCtx.createMediaElementSource(s2).connect(gainNode);
+  }
 
-            // Eşik değer aşılırsa çığlık at!
-            if (value > limit && !sensorActive) {
-                sensorActive = true;
-                triggerAlert();
-            } else if (value < limit - 10) {
-                sensorActive = false;
-                document.getElementById('main-box').classList.remove('active-sigma');
-            }
-        }
+  if("Magnetometer" in window){
+    sensorAvailable = true;
+    const m = new Magnetometer({frequency:60});
+    m.addEventListener("reading",()=>{
+      const v = Math.sqrt(m.x*m.x + m.y*m.y + m.z*m.z);
+      update(v);
+    });
+    m.start();
+  } else {
+    notice.innerText = "⚠️ Magnetic sensor not detected on this device.";
+  }
+}
 
-        function triggerAlert() {
-            const sound = jollyToggle.checked ? document.getElementById('jonklerScream') : document.getElementById('lebronScream');
-            gainNode.gain.value = document.getElementById('volumeSlider').value / 100;
-            document.getElementById('main-box').classList.add('active-sigma');
-            sound.currentTime = 0;
-            sound.play();
-        }
+function update(v){
+  mag.innerText = Math.floor(v)+" μT";
+  let limit = sens.value;
+  let angle = (v/limit)*180 - 90;
+  angle = Math.max(-90,Math.min(90,angle));
+  needle.style.transform = `rotate(${angle}deg)`;
 
-        function toggleSettings() {
-            const panel = document.getElementById('settings-panel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
+  if(v>limit && !active){
+    active = true;
+    gainNode.gain.value = volume/100;
+    const snd = jolly.checked ? s2 : s1;
+    snd.currentTime=0;
+    snd.play();
+    char.classList.add("active");
+  }
+  if(v<limit-10){
+    active=false;
+    char.classList.remove("active");
+  }
+}
 
-        function simulateSensor() {
-             setInterval(() => {
-                let val = Math.random() * 60;
-                updateUI(val);
-            }, 100);
-        }
-    </script>
+/* RGB Canvas Slider */
+const c = slider;
+const ctx = c.getContext("2d");
+c.width = 600; c.height = 80;
+
+function draw(){
+  ctx.clearRect(0,0,c.width,c.height);
+  const t = Date.now()/500;
+  const r = 128+127*Math.sin(t);
+  const g = 128+127*Math.sin(t+2);
+  const b = 128+127*Math.sin(t+4);
+  ctx.strokeStyle = `rgb(${r},${g},${b})`;
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.moveTo(0,40);
+  ctx.lineTo((volume/1000)*c.width,40);
+  ctx.stroke();
+  requestAnimationFrame(draw);
+}
+draw();
+
+function setVol(e){
+  const rect = c.getBoundingClientRect();
+  const x = e.touches?e.touches[0].clientX:e.clientX;
+  volume = Math.max(0,Math.min(1000,((x-rect.left)/rect.width)*1000));
+  volText.innerText = "Volume: "+(volume/100).toFixed(2)+"x";
+}
+c.addEventListener("mousedown",e=>{setVol(e); c.onmousemove=setVol});
+c.addEventListener("mouseup",()=>c.onmousemove=null);
+c.addEventListener("touchstart",setVol);
+c.addEventListener("touchmove",setVol);
+</script>
+
 </body>
 </html>
