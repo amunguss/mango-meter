@@ -26,10 +26,6 @@ body {
   overflow:hidden;
 }
 
-body.jolly-mode {
-  background:url("whyishesojolly.jpg") center/cover no-repeat;
-}
-
 .settings-btn {
   position:fixed;
   top:20px;
@@ -94,12 +90,14 @@ body.jolly-mode {
 
 #sliderWrap {
   width:100%;
-  height:100px;
+  margin-top:10px;
   animation:rgb-cycle 2s linear infinite;
 }
-canvas {
+
+#slider {
   width:100%;
-  height:80px;
+  height:50px;
+  touch-action:none;
 }
 
 #notice {
@@ -107,7 +105,6 @@ canvas {
   bottom:10px;
   font-size:12px;
   color:#777;
-  opacity:0.8;
 }
 </style>
 </head>
@@ -130,8 +127,6 @@ canvas {
   <hr>
   <h3>Jolly Mode</h3>
   <input type="checkbox" id="jolly" onchange="toggleJolly()" style="transform:scale(2)">
-  <br><br>
-  <button onclick="toggleSettings()" style="width:100%">SAVE</button>
 </div>
 
 <div id="mag">0 μT</div>
@@ -152,21 +147,24 @@ canvas {
 <script>
 let audioCtx, gainNode;
 let volume = 100;
-let sensorAvailable = false;
 let active = false;
+
+const canvas = document.getElementById("slider");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas(){
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
 function toggleSettings(){
   settings.style.display = settings.style.display==="block"?"none":"block";
 }
 
 function toggleJolly(){
-  if(jolly.checked){
-    document.body.classList.add("jolly-mode");
-    char.src="whysojolly.jpg";
-  } else {
-    document.body.classList.remove("jolly-mode");
-    char.src="lebron.png";
-  }
+  char.src = jolly.checked ? "whysojolly.jpg" : "lebron.png";
 }
 
 function start(){
@@ -179,7 +177,6 @@ function start(){
   }
 
   if("Magnetometer" in window){
-    sensorAvailable = true;
     const m = new Magnetometer({frequency:60});
     m.addEventListener("reading",()=>{
       const v = Math.sqrt(m.x*m.x + m.y*m.y + m.z*m.z);
@@ -212,37 +209,39 @@ function update(v){
   }
 }
 
-/* RGB Canvas Slider */
-const c = slider;
-const ctx = c.getContext("2d");
-c.width = 600; c.height = 80;
-
-function draw(){
-  ctx.clearRect(0,0,c.width,c.height);
+/* ===== WORKING RGB JEL SLIDER ===== */
+function drawSlider(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
   const t = Date.now()/500;
-  const r = 128+127*Math.sin(t);
-  const g = 128+127*Math.sin(t+2);
-  const b = 128+127*Math.sin(t+4);
-  ctx.strokeStyle = `rgb(${r},${g},${b})`;
+  ctx.strokeStyle = `rgb(
+    ${128+127*Math.sin(t)},
+    ${128+127*Math.sin(t+2)},
+    ${128+127*Math.sin(t+4)}
+  )`;
   ctx.lineWidth = 10;
+  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(0,40);
-  ctx.lineTo((volume/1000)*c.width,40);
+  ctx.moveTo(10,canvas.height/2);
+  ctx.lineTo(10 + (volume/1000)*(canvas.width-20),canvas.height/2);
   ctx.stroke();
-  requestAnimationFrame(draw);
+  requestAnimationFrame(drawSlider);
 }
-draw();
+drawSlider();
 
-function setVol(e){
-  const rect = c.getBoundingClientRect();
-  const x = e.touches?e.touches[0].clientX:e.clientX;
-  volume = Math.max(0,Math.min(1000,((x-rect.left)/rect.width)*1000));
-  volText.innerText = "Volume: "+(volume/100).toFixed(2)+"x";
+function setVolumeFromEvent(e){
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  volume = Math.max(0,Math.min(1000,(x/rect.width)*1000));
+  volText.innerText = "Volume: " + (volume/100).toFixed(2) + "x";
 }
-c.addEventListener("mousedown",e=>{setVol(e); c.onmousemove=setVol});
-c.addEventListener("mouseup",()=>c.onmousemove=null);
-c.addEventListener("touchstart",setVol);
-c.addEventListener("touchmove",setVol);
+
+canvas.addEventListener("mousedown",e=>{
+  setVolumeFromEvent(e);
+  window.onmousemove = setVolumeFromEvent;
+  window.onmouseup = ()=>window.onmousemove=null;
+});
+canvas.addEventListener("touchstart",setVolumeFromEvent);
+canvas.addEventListener("touchmove",setVolumeFromEvent);
 </script>
 
 </body>
